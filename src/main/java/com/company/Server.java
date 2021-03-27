@@ -37,6 +37,7 @@ public class Server {
 
         try {
             readServerData();
+            DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
             Connection connection = DriverManager.getConnection(url, username, password);
             HttpServer server = HttpServer.create(new InetSocketAddress(address, 8001), 0);
             //HttpServer server = HttpServer.create();
