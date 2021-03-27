@@ -19,7 +19,7 @@ public class Server {
     public static String address;
 
     public static void readServerData() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("/home/kpi_cloud_platform/data.txt"))) {
             url = reader.readLine();
             address = reader.readLine();
         } catch (IOException e) {
