@@ -5,20 +5,18 @@ import com.company.handlers.UserHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.sql.*;
 
 public class Server {
-    public static String url; // = "jdbc:mysql://localhost:3306/messenger_database";
-    public static final String username = "root";
-    public static final String password = "root";
-    public static String address; // = "127.0.0.1";
+    private static String url;
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "root";
+    private static String address;
 
-    public static void readServerData() {
+    public static void initServerData() {
         try (BufferedReader reader = new BufferedReader(new FileReader("/home/kpi_cloud_platform/data.txt"))) {
             url = reader.readLine();
             address = reader.readLine();
@@ -26,22 +24,19 @@ public class Server {
             e.printStackTrace();
         }
     }
+
+    public static void initFakeServerData() {
+        url = "jdbc:mysql://localhost:3306/messenger_database";
+        address = "localhost";
+    }
     
     public static void main(String[] args) throws IOException {
-        /*try {
-            Driver driver = new com.mysql.cj.jdbc.Driver();
-            DriverManager.registerDriver(driver);
-        } catch (SQLException throwables) {
-            System.out.println("Problems with driver");
-        }*/
-
         try {
-            readServerData();
+            initServerData();
+            //initFakeServerData();
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
-            Connection connection = DriverManager.getConnection(url, username, password);
-            HttpServer server = HttpServer.create(new InetSocketAddress(address, 8001), 0);
-            //HttpServer server = HttpServer.create();
-            //server.bind(new InetSocketAddress(, 8000), 0);
+            Connection connection = DriverManager.getConnection(url, USERNAME, PASSWORD);
+            HttpServer server = HttpServer.create(new InetSocketAddress(address, 8000), 0);
             System.out.println("Server was bind");
             server.createContext("/api/messages", new MessageHandler(connection));
             server.createContext("/api/users", new UserHandler(connection));
