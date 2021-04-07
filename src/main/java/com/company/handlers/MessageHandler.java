@@ -2,6 +2,7 @@ package com.company.handlers;
 
 import com.company.Message;
 import com.company.QueryNotFoundException;
+import com.company.Status;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -49,17 +50,21 @@ public class MessageHandler extends AbstractHandler {
             message = objectMapper.readValue(inputStream, Message.class);
             processAddStatement(message);
         } catch (Exception e) {
-            isSuccessful = false;
+            status = Status.FAIL;
+            if (message != null) {
+                message.setTime(0);
+                message.setId(-1);
+            }
             e.printStackTrace();
         } finally {
             if (message == null)
-                sendStatus(exchange, isSuccessful, -1, -1);
+                sendStatus(exchange, getStatusResponse(-1, -1));
             else
-                sendStatus(exchange, isSuccessful, message.getId(), message.getTime());
+                sendStatus(exchange, getStatusResponse(message.getId(), message.getTime()));
         }
     }
 
-    private void processAddStatement(Message message) {
+    private void processAddStatement(Message message) throws Exception {
         try (PreparedStatement addStatement =
                      connection.prepareStatement(ADD, Statement.RETURN_GENERATED_KEYS)) {
             addStatement.setLong(1, message.getFromId());
@@ -72,9 +77,6 @@ public class MessageHandler extends AbstractHandler {
             ResultSet resultSet = addStatement.getGeneratedKeys();
             if (resultSet.next())
                 message.setId(resultSet.getLong(1));
-        } catch (Exception e) {
-            isSuccessful = false;
-            e.printStackTrace();
         }
     }
 

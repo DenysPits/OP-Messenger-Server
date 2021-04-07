@@ -1,6 +1,7 @@
 package com.company.handlers;
 
 import com.company.QueryNotFoundException;
+import com.company.Status;
 import com.company.StatusResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +15,7 @@ import java.sql.Connection;
 public abstract class AbstractHandler implements HttpHandler {
     protected Connection connection;
     protected static ObjectMapper objectMapper = new ObjectMapper();
-    protected boolean isSuccessful = true;
+    protected Status status = Status.SUCCESS;
 
     public AbstractHandler(Connection connection) {
         this.connection = connection;
@@ -41,18 +42,20 @@ public abstract class AbstractHandler implements HttpHandler {
         throw new QueryNotFoundException();
     }
 
-    protected void sendStatus(HttpExchange exchange, boolean isSuccessful, long... idAndOptionalTime) throws IOException {
-        StatusResponse status;
-        if (idAndOptionalTime.length == 1)
-             status = new StatusResponse(isSuccessful ? "success" : "fail", idAndOptionalTime[0]);
-        else
-            status = new StatusResponse(isSuccessful ? "success" : "fail", idAndOptionalTime[0], idAndOptionalTime[1]);
-        this.isSuccessful = true;
-        byte[] response = objectMapper.writeValueAsBytes(status);
+    protected StatusResponse getStatusResponse(long id) {
+        return new StatusResponse(status, id);
+    }
+
+    protected StatusResponse getStatusResponse(long id, long time) {
+        return new StatusResponse(status, id, time);
+    }
+
+    protected void sendStatus(HttpExchange exchange, StatusResponse statusResponse) throws IOException {
+        this.status = Status.SUCCESS; //don't delete, it is useful
+        byte[] response = objectMapper.writeValueAsBytes(statusResponse);
         OutputStream outputStream = exchange.getResponseBody();
         exchange.sendResponseHeaders(200, response.length);
         outputStream.write(response);
-
         outputStream.close();
     }
 

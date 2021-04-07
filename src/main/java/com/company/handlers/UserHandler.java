@@ -1,6 +1,7 @@
 package com.company.handlers;
 
 import com.company.QueryNotFoundException;
+import com.company.Status;
 import com.company.User;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -37,15 +38,18 @@ public class UserHandler extends AbstractHandler {
         sendUserInResponse(exchange, user);
     }
 
-    private void sendUserInResponse(HttpExchange exchange, User user) {
-        try {
-            byte[] response = objectMapper.writeValueAsBytes(user);
-            exchange.sendResponseHeaders(200, response.length);
-            OutputStream outputStream = exchange.getResponseBody();
-            outputStream.write(response);
-            outputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    @Override
+    public void processPostRequest(HttpExchange exchange) throws IOException {
+        User user = null;
+        try (InputStream inputStream = exchange.getRequestBody()) {
+            String requestQuery = exchange.getRequestURI().getQuery();
+            user = objectMapper.readValue(inputStream, User.class);
+            user.setId(Long.parseLong(getQueryValue(requestQuery, "update")));
+            processUpdateStatement(user);
+        } catch (QueryNotFoundException queryNotFoundException) {
+            processAddStatement(user);
+        } finally {
+            sendStatus(exchange, getStatusResponse(user != null ? user.getId() : -1));
         }
     }
 
@@ -66,6 +70,18 @@ public class UserHandler extends AbstractHandler {
         } catch (SQLException | QueryNotFoundException throwables) {
             throwables.printStackTrace();
             return null;
+        }
+    }
+
+    private void sendUserInResponse(HttpExchange exchange, User user) {
+        try {
+            byte[] response = objectMapper.writeValueAsBytes(user);
+            exchange.sendResponseHeaders(200, response.length);
+            OutputStream outputStream = exchange.getResponseBody();
+            outputStream.write(response);
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -97,21 +113,6 @@ public class UserHandler extends AbstractHandler {
         return queryKeys;
     }
 
-    @Override
-    public void processPostRequest(HttpExchange exchange) throws IOException {
-        User user = null;
-        try (InputStream inputStream = exchange.getRequestBody()) {
-            String requestQuery = exchange.getRequestURI().getQuery();
-            user = objectMapper.readValue(inputStream, User.class);
-            user.setId(Long.parseLong(getQueryValue(requestQuery, "update")));
-            processUpdateStatement(user);
-        } catch (QueryNotFoundException queryNotFoundException) {
-            processAddStatement(user);
-        } finally {
-            sendStatus(exchange, isSuccessful, user != null ? user.getId() : -1);
-        }
-    }
-
     private void processUpdateStatement(User user) {
         try (PreparedStatement updateStatement = connection.prepareStatement(UPDATE)) {
             updateStatement.setString(1, user.getName());
@@ -121,7 +122,7 @@ public class UserHandler extends AbstractHandler {
             updateStatement.setLong(5, user.getId());
             updateStatement.executeUpdate();
         } catch (SQLException throwables) {
-            isSuccessful = false;
+            status = Status.FAIL;
             throwables.printStackTrace();
         }
     }
@@ -137,9 +138,14 @@ public class UserHandler extends AbstractHandler {
             ResultSet resultSet = addStatement.getGeneratedKeys();
             if (resultSet.next())
                 user.setId(resultSet.getLong(1));
-        } catch (SQLException throwables) {
-            isSuccessful = false;
-            throwables.printStackTrace();
+        } catch (SQLIntegrityConstraintViolationException e) {
+            status = Status.TAG_IS_TAKEN;
+            user.setId(-1);
+            e.printStackTrace();
+        } catch (SQLException e) {
+            status = Status.FAIL;
+            user.setId(-1);
+            e.printStackTrace();
         }
     }
 }
