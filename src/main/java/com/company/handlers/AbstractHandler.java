@@ -1,7 +1,7 @@
 package com.company.handlers;
 
 import com.company.QueryNotFoundException;
-import com.company.StatusIdResponse;
+import com.company.StatusResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -15,7 +15,6 @@ public abstract class AbstractHandler implements HttpHandler {
     protected Connection connection;
     protected static ObjectMapper objectMapper = new ObjectMapper();
     protected boolean isSuccessful = true;
-    protected long id = -1;
 
     public AbstractHandler(Connection connection) {
         this.connection = connection;
@@ -42,14 +41,18 @@ public abstract class AbstractHandler implements HttpHandler {
         throw new QueryNotFoundException();
     }
 
-    protected void sendStatus(HttpExchange exchange, boolean isSuccessful, long id) throws IOException {
-        StatusIdResponse status = new StatusIdResponse(isSuccessful ? "success" : "fail", id);
+    protected void sendStatus(HttpExchange exchange, boolean isSuccessful, long... idAndOptionalTime) throws IOException {
+        StatusResponse status;
+        if (idAndOptionalTime.length == 1)
+             status = new StatusResponse(isSuccessful ? "success" : "fail", idAndOptionalTime[0]);
+        else
+            status = new StatusResponse(isSuccessful ? "success" : "fail", idAndOptionalTime[0], idAndOptionalTime[1]);
         this.isSuccessful = true;
-        this.id = -1;
         byte[] response = objectMapper.writeValueAsBytes(status);
         OutputStream outputStream = exchange.getResponseBody();
         exchange.sendResponseHeaders(200, response.length);
         outputStream.write(response);
+
         outputStream.close();
     }
 

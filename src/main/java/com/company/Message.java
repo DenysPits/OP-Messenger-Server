@@ -1,10 +1,12 @@
 package com.company;
 
+import java.util.Date;
+
 public class Message {
     private long id;
     private long fromId;
     private long toId;
-    private long time;
+    private long time = new Date().getTime();
     private String action;
     private String body;
 

@@ -2,7 +2,6 @@ package com.company.handlers;
 
 import com.company.Message;
 import com.company.QueryNotFoundException;
-import com.company.StatusIdResponse;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ public class MessageHandler extends AbstractHandler {
     @Override
     public void processGetRequest(HttpExchange exchange) throws IOException {
         ArrayList<Message> messages = new ArrayList<>();
-        try (InputStream inputStream = exchange.getRequestBody();) {
+        try (InputStream inputStream = exchange.getRequestBody()) {
             String requestQuery = exchange.getRequestURI().getQuery();
             long toId = Long.parseLong(getQueryValue(requestQuery, "id"));
             boolean deleteMessages;
@@ -45,14 +44,18 @@ public class MessageHandler extends AbstractHandler {
 
     @Override
     public void processPostRequest(HttpExchange exchange) throws IOException {
+        Message message = null;
         try (InputStream inputStream = exchange.getRequestBody()) {
-            Message message = objectMapper.readValue(inputStream, Message.class);
+            message = objectMapper.readValue(inputStream, Message.class);
             processAddStatement(message);
         } catch (Exception e) {
             isSuccessful = false;
             e.printStackTrace();
         } finally {
-            sendStatus(exchange, isSuccessful, id);
+            if (message == null)
+                sendStatus(exchange, isSuccessful, -1, -1);
+            else
+                sendStatus(exchange, isSuccessful, message.getId(), message.getTime());
         }
     }
 
@@ -68,7 +71,7 @@ public class MessageHandler extends AbstractHandler {
             addStatement.getGeneratedKeys();
             ResultSet resultSet = addStatement.getGeneratedKeys();
             if (resultSet.next())
-                id = resultSet.getLong(1);
+                message.setId(resultSet.getLong(1));
         } catch (Exception e) {
             isSuccessful = false;
             e.printStackTrace();

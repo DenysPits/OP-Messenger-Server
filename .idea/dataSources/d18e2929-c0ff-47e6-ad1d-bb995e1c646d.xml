@@ -980,10 +980,19 @@ SELECT|sys.sys_config
       <Position>5</Position>
       <DataType>text|0s</DataType>
     </column>
-    <key id="300" parent="287" name="PRIMARY">
+    <index id="300" parent="287" name="users_tag_uindex">
+      <ColNames>tag</ColNames>
+      <Unique>1</Unique>
+      <Type>btree</Type>
+    </index>
+    <key id="301" parent="287" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
+    </key>
+    <key id="302" parent="287" name="users_tag_uindex">
+      <ColNames>tag</ColNames>
+      <UnderlyingIndexName>users_tag_uindex</UnderlyingIndexName>
     </key>
   </database-model>
 </dataSource>

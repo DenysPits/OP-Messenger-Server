@@ -12,8 +12,8 @@ import java.sql.*;
 public class UserHandler extends AbstractHandler {
     private static final String ADD = "INSERT INTO users (name, tag, public_rsa, photo) VALUES (?, ?, ?, ?);";
     private static final String UPDATE = "UPDATE users SET name=?, tag=?, public_rsa=?, photo=? WHERE id=?";
-    public static final String GET_BY_ID = "SELECT * FROM users WHERE id=?";
-    public static final String GET_BY_TAG = "SELECT * FROM users WHERE tag=?";
+    private static final String GET_BY_ID = "SELECT * FROM users WHERE id=?";
+    private static final String GET_BY_TAG = "SELECT * FROM users WHERE tag=?";
 
     public UserHandler(Connection connection) {
         super(connection);
@@ -103,12 +103,12 @@ public class UserHandler extends AbstractHandler {
         try (InputStream inputStream = exchange.getRequestBody()) {
             String requestQuery = exchange.getRequestURI().getQuery();
             user = objectMapper.readValue(inputStream, User.class);
-            id = Long.parseLong(getQueryValue(requestQuery, "update"));
+            user.setId(Long.parseLong(getQueryValue(requestQuery, "update")));
             processUpdateStatement(user);
         } catch (QueryNotFoundException queryNotFoundException) {
             processAddStatement(user);
         } finally {
-            sendStatus(exchange, isSuccessful, id);
+            sendStatus(exchange, isSuccessful, user != null ? user.getId() : -1);
         }
     }
 
@@ -118,7 +118,7 @@ public class UserHandler extends AbstractHandler {
             updateStatement.setString(2, user.getTag());
             updateStatement.setString(3, user.getPublicRsa());
             updateStatement.setString(4, user.getPhoto());
-            updateStatement.setLong(5, id);
+            updateStatement.setLong(5, user.getId());
             updateStatement.executeUpdate();
         } catch (SQLException throwables) {
             isSuccessful = false;
@@ -136,7 +136,7 @@ public class UserHandler extends AbstractHandler {
             addStatement.getGeneratedKeys();
             ResultSet resultSet = addStatement.getGeneratedKeys();
             if (resultSet.next())
-                id = resultSet.getLong(1);
+                user.setId(resultSet.getLong(1));
         } catch (SQLException throwables) {
             isSuccessful = false;
             throwables.printStackTrace();

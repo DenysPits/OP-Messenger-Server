@@ -32,8 +32,8 @@ public class Server {
     
     public static void main(String[] args) throws IOException {
         try {
-            initServerData();
-            //initFakeServerData();
+            //initServerData();
+            initFakeServerData();
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
             Connection connection = DriverManager.getConnection(url, USERNAME, PASSWORD);
             HttpServer server = HttpServer.create(new InetSocketAddress(address, 8000), 0);
