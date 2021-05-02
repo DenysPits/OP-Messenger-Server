@@ -1,7 +1,5 @@
 package com.company;
 
-import java.util.Date;
-
 public class Message {
     private long id;
     private long fromId;

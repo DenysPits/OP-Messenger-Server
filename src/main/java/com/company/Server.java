@@ -9,9 +9,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 
 public class Server {
     private static String url;
@@ -34,10 +31,7 @@ public class Server {
     }
     
     public static void main(String[] args) {
-        System.out.println(LocalDateTime.now().atZone(ZoneId.of("Europe/Kiev")).toInstant().toEpochMilli());
-        System.out.println(System.currentTimeMillis());
-        System.out.println(new Date().getTime());
-        /*try {
+        try {
             initServerData();
             //initFakeServerData();
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
@@ -48,8 +42,8 @@ public class Server {
             server.createContext("/api/users", new UserHandler(connection));
             server.setExecutor(null);
             server.start();
-        } catch (SQLException throwables) {
+        } catch (SQLException | IOException throwables) {
             throwables.printStackTrace();
-        }*/
+        }
     }
 }
