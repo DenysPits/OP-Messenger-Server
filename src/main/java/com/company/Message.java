@@ -1,13 +1,12 @@
 package com.company;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.Date;
 
 public class Message {
     private long id;
     private long fromId;
     private long toId;
-    private long time = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    private long time = System.currentTimeMillis();
     private String action;
     private String body;
 
