@@ -1,9 +1,12 @@
 package com.company;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Message {
     private long id;
     private long fromId;
     private long toId;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private long time = System.currentTimeMillis();
     private String action;
     private String body;
