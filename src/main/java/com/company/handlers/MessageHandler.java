@@ -4,6 +4,8 @@ import com.company.Message;
 import com.company.QueryNotFoundException;
 import com.company.Status;
 import com.sun.net.httpserver.HttpExchange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +18,7 @@ public class MessageHandler extends AbstractHandler {
     public static final String ADD = "INSERT INTO messages (from_id, to_id, body, time, action) VALUES (?, ?, ?, ?, ?);";
     public static final String GET = "SELECT * FROM messages WHERE to_id = ?;";
     public static final String DELETE = "DELETE FROM messages WHERE to_id = ?";
+    protected static Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
     public MessageHandler(Connection connection) {
         super(connection);
@@ -47,14 +50,19 @@ public class MessageHandler extends AbstractHandler {
     public void processPostRequest(HttpExchange exchange) throws IOException {
         Message message = null;
         try (InputStream inputStream = exchange.getRequestBody()) {
+            logger.trace("Got request body");
             message = objectMapper.readValue(inputStream, Message.class);
+            logger.trace("Deserialized json");
             processAddStatement(message);
+            logger.trace("Processed add statement");
         } catch (Exception e) {
             status = Status.FAIL;
+            logger.warn("Exception was caught and status fail was assigned");
             if (message != null) {
                 message.setTime(0);
                 message.setId(-1);
             }
+            logger.trace("Time was set to 0, the id was set to -1");
             e.printStackTrace();
         } finally {
             if (message == null)
@@ -67,16 +75,21 @@ public class MessageHandler extends AbstractHandler {
     private void processAddStatement(Message message) throws Exception {
         try (PreparedStatement addStatement =
                      connection.prepareStatement(ADD, Statement.RETURN_GENERATED_KEYS)) {
+            logger.trace("Statement prepared");
             addStatement.setLong(1, message.getFromId());
             addStatement.setLong(2, message.getToId());
             addStatement.setString(3, message.getBody());
             addStatement.setLong(4, message.getTime());
             addStatement.setString(5, message.getAction());
+            logger.trace("Properties were set");
             addStatement.executeUpdate();
+            logger.trace("Add statement was executed");
             addStatement.getGeneratedKeys();
             ResultSet resultSet = addStatement.getGeneratedKeys();
-            if (resultSet.next())
+            if (resultSet.next()) {
                 message.setId(resultSet.getLong(1));
+            }
+            logger.trace("Returned id was set");
         }
     }
 
