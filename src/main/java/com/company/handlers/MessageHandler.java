@@ -56,19 +56,23 @@ public class MessageHandler extends AbstractHandler {
             processAddStatement(message);
             logger.trace("Processed add statement");
         } catch (Exception e) {
+            logger.warn("Exception was caught", e);
             status = Status.FAIL;
-            logger.warn("Exception was caught and status fail was assigned");
+            logger.warn("Status fail was assigned");
             if (message != null) {
                 message.setTime(0);
                 message.setId(-1);
+                logger.trace("Time was set to 0, the id was set to -1. Message is not null");
             }
-            logger.trace("Time was set to 0, the id was set to -1");
             e.printStackTrace();
         } finally {
-            if (message == null)
-                sendStatus(exchange, getStatusResponse(-1, -1));
-            else
+            if (message == null) {
+                sendStatus(exchange, getStatusResponse(-1, 0));
+                logger.trace("Time was set to 0, the id was set to -1. Message is null");
+            }
+            else {
                 sendStatus(exchange, getStatusResponse(message.getId(), message.getTime()));
+            }
         }
     }
 
