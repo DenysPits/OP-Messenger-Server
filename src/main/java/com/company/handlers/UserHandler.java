@@ -1,5 +1,6 @@
 package com.company.handlers;
 
+import com.company.Message;
 import com.company.QueryNotFoundException;
 import com.company.Status;
 import com.company.User;
@@ -9,12 +10,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UserHandler extends AbstractHandler {
     private static final String ADD = "INSERT INTO users (name, tag, public_rsa, photo) VALUES (?, ?, ?, ?);";
     private static final String UPDATE = "UPDATE users SET name=?, tag=?, public_rsa=?, photo=? WHERE id=?";
     private static final String GET_BY_ID = "SELECT * FROM users WHERE id=?";
     private static final String GET_BY_TAG = "SELECT * FROM users WHERE tag=?";
+
 
     public UserHandler(Connection connection) {
         super(connection);
@@ -121,9 +126,34 @@ public class UserHandler extends AbstractHandler {
             updateStatement.setString(4, user.getPhoto());
             updateStatement.setLong(5, user.getId());
             updateStatement.executeUpdate();
-        } catch (SQLException throwables) {
+            notifyPeople(user.getId());
+        } catch (SQLIntegrityConstraintViolationException e) {
+            status = Status.TAG_IS_TAKEN;
+            e.printStackTrace();
+        } catch (Exception throwables) {
             status = Status.FAIL;
             throwables.printStackTrace();
+        }
+    }
+
+    private void notifyPeople(long id) throws Exception {
+        Message updateMessage = new Message();
+        updateMessage.setAction("update");
+        updateMessage.setFromId(0);
+        updateMessage.setTime(0);
+        updateMessage.setBody("");
+        MessageHandler messageHandler = new MessageHandler(connection);
+        ArrayList<Message> messages = new ArrayList<>();
+        messageHandler.doGetToIdStatement(id, messages);
+        messageHandler.doGetFromIdStatement(id, messages);
+        Set<Long> toIds = new HashSet<>();
+        for (Message message : messages) {
+            long toId = (message.getFromId() == id) ? message.getToId() : message.getFromId();
+            toIds.add(toId);
+        }
+        for (Long toId : toIds) {
+            updateMessage.setToId(toId);
+            messageHandler.processAddStatement(updateMessage);
         }
     }
 
