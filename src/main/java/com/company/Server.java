@@ -17,7 +17,7 @@ public class Server {
     private static String address;
 
     public static void initServerData() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("/home/kpi_cloud_platform/data.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
             url = reader.readLine();
             address = reader.readLine();
         } catch (IOException e) {
@@ -27,7 +27,8 @@ public class Server {
 
     public static void initFakeServerData() {
         url = "jdbc:mysql://localhost:3306/messenger_database";
-        address = "localhost";
+        address = "0.0.0.0";
+        //address = "localhost";
     }
     
     public static void main(String[] args) {
