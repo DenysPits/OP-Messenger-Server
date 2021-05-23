@@ -15,7 +15,7 @@ public class Server {
     private static String address;
 
     public static void initServerData() {
-        url = "jdbc:mysql://db:3306/messenger_database?autoReconnect=true&useSSL=false";
+        url = "jdbc:mysql://db:3306/messenger_database?autoReconnect=true";
         address = "10.132.0.2";
 //        try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
 //            url = reader.readLine();
