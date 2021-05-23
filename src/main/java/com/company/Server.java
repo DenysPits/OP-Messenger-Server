@@ -4,8 +4,6 @@ import com.company.handlers.MessageHandler;
 import com.company.handlers.UserHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.*;
@@ -17,18 +15,19 @@ public class Server {
     private static String address;
 
     public static void initServerData() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
-            url = reader.readLine();
-            address = reader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        url = "jdbc:mysql://db:3306/messenger_database?autoReconnect=true&useSSL=false";
+        address = "10.132.0.2";
+//        try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
+//            url = reader.readLine();
+//            address = reader.readLine();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public static void initFakeServerData() {
-        url = "jdbc:mysql://localhost:3306/messenger_database";
-        address = "0.0.0.0";
-        //address = "localhost";
+        url = "jdbc:mysql://localhost:3306/messenger_database?autoReconnect=true&useSSL=false";
+        address = "localhost";
     }
     
     public static void main(String[] args) {
