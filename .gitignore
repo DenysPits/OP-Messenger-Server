@@ -1,3 +1,4 @@
 # Project exclude paths
 /target/
-/data.txt
+/src/main/resources/data.txt
+/src/main/resources/commands.sql

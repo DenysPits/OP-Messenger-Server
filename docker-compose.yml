@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  db:
+    image: "mysql"
+    container_name: db
+    networks:
+      - messnet
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - db_storage:/app/src/main/resources
+  messenger:
+    build: .
+    image: messenger
+    container_name: messenger
+    networks:
+      - messnet
+    ports:
+    - 8000:8000
+
+networks:
+  messnet:
+    name: messnet
+    driver: bridge
+
+volumes:
+  db_storage:
+    name: db_storage

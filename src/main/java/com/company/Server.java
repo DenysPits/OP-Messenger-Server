@@ -17,13 +17,12 @@ public class Server {
     public static void initServerData() {
         url = "jdbc:mysql://db:3306/messenger_database?autoReconnect=true";
         address = "0.0.0.0";
-        //address = "10.132.0.2";
-//        try (BufferedReader reader = new BufferedReader(new FileReader("data.txt"))) {
-//            url = reader.readLine();
-//            address = reader.readLine();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        /*try (BufferedReader reader = new BufferedReader(new FileReader("/app/src/main/resources/data.txt"))) {
+            url = reader.readLine();
+            address = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 
     public static void initFakeServerData() {
