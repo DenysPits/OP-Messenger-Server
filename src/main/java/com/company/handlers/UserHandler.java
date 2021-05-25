@@ -19,6 +19,7 @@ public class UserHandler extends AbstractHandler {
     private static final String UPDATE = "UPDATE users SET name=?, tag=?, public_rsa=?, photo=? WHERE id=?";
     private static final String GET_BY_ID = "SELECT * FROM users WHERE id=?";
     private static final String GET_BY_TAG = "SELECT * FROM users WHERE tag=?";
+    private static final String SELECT_RELATIONSHIPS = "SELECT relationships FROM users WHERE id=?";
 
 
     public UserHandler(Connection connection) {
@@ -56,6 +57,45 @@ public class UserHandler extends AbstractHandler {
         } finally {
             sendStatus(exchange, getStatusResponse(user != null ? user.getId() : -1));
         }
+    }
+
+    public void addUsersRelationship(Message message) {
+        String addRelationshipForSender = "UPDATE users SET relationships=CONCAT(IFNULL(relationships,''),'" + message.getToId() + " ') WHERE id=" + message.getFromId();
+        String addRelationshipForReceiver = "UPDATE users SET relationships=CONCAT(IFNULL(relationships,''),'" + message.getFromId() + " ') WHERE id=" + message.getToId();
+        try(Statement addRelationshipStatement = connection.createStatement()) {
+            String userRelationships = getUserRelationships(message.getFromId());
+            if (!checkSameRelationships(userRelationships, message.getToId())) {
+                addRelationshipStatement.executeUpdate(addRelationshipForSender);
+                addRelationshipStatement.executeUpdate(addRelationshipForReceiver);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+    private String getUserRelationships(long id) {
+        try (PreparedStatement selectRelationshipsStatement = connection.prepareStatement(SELECT_RELATIONSHIPS)) {
+            selectRelationshipsStatement.setLong(1, id);
+            ResultSet relationsSet = selectRelationshipsStatement.executeQuery();
+            if (relationsSet.next()) {
+                return relationsSet.getString(1);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+    }
+
+    private boolean checkSameRelationships(String relationshipsText, long toId) throws SQLException {
+        if (relationshipsText != null) {
+            String[] relationsSplit = relationshipsText.trim().split("\\s+");
+            for (String relation : relationsSplit) {
+                if (relation.equals(String.valueOf(toId))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private User getUserById(HttpExchange exchange, String query) {
@@ -136,23 +176,19 @@ public class UserHandler extends AbstractHandler {
         }
     }
 
-    private void notifyPeople(long id) throws Exception {
+    private void notifyPeople(long idWhoWasUpdated) throws Exception {
+        String userRelationshipsStr = getUserRelationships(idWhoWasUpdated);
+        if (userRelationshipsStr == null) {
+            return;
+        }
         Message updateMessage = new Message();
         updateMessage.setAction("update");
         updateMessage.setFromId(0);
-        updateMessage.setTime(0);
-        updateMessage.setBody("");
+        updateMessage.setBody(String.valueOf(idWhoWasUpdated));
+        String[] userRelationships = userRelationshipsStr.trim().split("\\s+");
         MessageHandler messageHandler = new MessageHandler(connection);
-        ArrayList<Message> messages = new ArrayList<>();
-        messageHandler.doGetToIdStatement(id, messages);
-        messageHandler.doGetFromIdStatement(id, messages);
-        Set<Long> toIds = new HashSet<>();
-        for (Message message : messages) {
-            long toId = (message.getFromId() == id) ? message.getToId() : message.getFromId();
-            toIds.add(toId);
-        }
-        for (Long toId : toIds) {
-            updateMessage.setToId(toId);
+        for (String userRelationship : userRelationships) {
+            updateMessage.setToId(Long.parseLong(userRelationship));
             messageHandler.processAddStatement(updateMessage);
         }
     }

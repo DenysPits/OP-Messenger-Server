@@ -8,8 +8,6 @@ services:
       - messnet
     environment:
       - MYSQL_ROOT_PASSWORD=root
-    volumes:
-      - db_storage:/app/src/main/resources
   messenger:
     build: .
     image: messenger
@@ -23,7 +21,3 @@ networks:
   messnet:
     name: messnet
     driver: bridge
-
-volumes:
-  db_storage:
-    name: db_storage

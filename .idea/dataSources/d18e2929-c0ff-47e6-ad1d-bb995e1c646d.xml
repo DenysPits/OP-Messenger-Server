@@ -1069,19 +1069,23 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
     </column>
     <column id="299" parent="287" name="photo">
       <Position>5</Position>
+      <DataType>longtext|0s</DataType>
+    </column>
+    <column id="300" parent="287" name="relationships">
+      <Position>6</Position>
       <DataType>text|0s</DataType>
     </column>
-    <index id="300" parent="287" name="users_tag_uindex">
+    <index id="301" parent="287" name="users_tag_uindex">
       <ColNames>tag</ColNames>
       <Unique>1</Unique>
       <Type>btree</Type>
     </index>
-    <key id="301" parent="287" name="PRIMARY">
+    <key id="302" parent="287" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <key id="302" parent="287" name="users_tag_uindex">
+    <key id="303" parent="287" name="users_tag_uindex">
       <ColNames>tag</ColNames>
       <UnderlyingIndexName>users_tag_uindex</UnderlyingIndexName>
     </key>

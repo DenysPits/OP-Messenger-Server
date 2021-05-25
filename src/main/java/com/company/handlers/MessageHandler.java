@@ -17,8 +17,7 @@ import java.util.List;
 
 public class MessageHandler extends AbstractHandler {
     public static final String ADD = "INSERT INTO messages (from_id, to_id, body, time, action) VALUES (?, ?, ?, ?, ?);";
-    public static final String GET_TO_ID = "SELECT * FROM messages WHERE to_id = ?;";
-    public static final String GET_FROM_ID = "SELECT * FROM messages WHERE from_id = ?;";
+    public static final String GET_MESSAGES_TO_ID = "SELECT * FROM messages WHERE to_id = ?;";
     public static final String GET_ALL = "SELECT * FROM messages;";
     public static final String DELETE = "DELETE FROM messages WHERE to_id = ?";
     protected static Logger logger = LoggerFactory.getLogger(MessageHandler.class);
@@ -59,6 +58,7 @@ public class MessageHandler extends AbstractHandler {
         try (InputStream inputStream = exchange.getRequestBody()) {
             message = objectMapper.readValue(inputStream, Message.class);
             processAddStatement(message);
+            new UserHandler(connection).addUsersRelationship(message);
         } catch (Exception e) {
             logger.warn("Exception was caught", e);
             status = Status.FAIL;
@@ -96,18 +96,8 @@ public class MessageHandler extends AbstractHandler {
         }
     }
 
-    public void doGetFromIdStatement(long fromId, List<Message> messages) {
-        try (PreparedStatement getStatement = connection.prepareStatement(GET_FROM_ID)) {
-            getStatement.setLong(1, fromId);
-            ResultSet resultSet = getStatement.executeQuery();
-            addRetrievedMessagesToList(messages, resultSet);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
-
     public void doGetToIdStatement(long toId, List<Message> messages) {
-        try (PreparedStatement getStatement = connection.prepareStatement(GET_TO_ID)) {
+        try (PreparedStatement getStatement = connection.prepareStatement(GET_MESSAGES_TO_ID)) {
             getStatement.setLong(1, toId);
             ResultSet resultSet = getStatement.executeQuery();
             addRetrievedMessagesToList(messages, resultSet);
