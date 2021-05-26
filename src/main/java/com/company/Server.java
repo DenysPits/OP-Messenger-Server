@@ -15,7 +15,7 @@ public class Server {
     private static String address;
 
     public static void initServerData() {
-        url = "jdbc:mysql://db:3306/messenger_database?autoReconnect=true";
+        url = "jdbc:mysql://db:3306/messenger_database?autoReconnect=true&useUnicode=true&characterEncoding=utf8";
         address = "0.0.0.0";
         /*try (BufferedReader reader = new BufferedReader(new FileReader("/app/src/main/resources/data.txt"))) {
             url = reader.readLine();
@@ -26,7 +26,7 @@ public class Server {
     }
 
     public static void initFakeServerData() {
-        url = "jdbc:mysql://localhost:3306/messenger_database?autoReconnect=true&useSSL=false";
+        url = "jdbc:mysql://localhost:3306/messenger_database?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8";
         address = "localhost";
     }
     
