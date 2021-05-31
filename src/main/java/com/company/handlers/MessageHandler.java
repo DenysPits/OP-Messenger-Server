@@ -31,7 +31,11 @@ public class MessageHandler extends AbstractHandler {
 
     public static MessageHandler getInstance(Connection connection) {
         if (instance == null) {
-            instance = new MessageHandler(connection);
+            synchronized (MessageHandler.class) {
+                if (instance == null) {
+                    instance = new MessageHandler(connection);
+                }
+            }
         }
         return instance;
     }

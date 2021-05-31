@@ -23,7 +23,7 @@ public abstract class AbstractHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public synchronized void handle(HttpExchange exchange) throws IOException {
         if (exchange.getRequestMethod().equalsIgnoreCase("post"))
             processPostRequest(exchange);
         else if (exchange.getRequestMethod().equalsIgnoreCase("get"))

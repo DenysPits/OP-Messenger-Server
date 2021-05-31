@@ -28,7 +28,11 @@ public class UserHandler extends AbstractHandler {
 
     public static UserHandler getInstance(Connection connection) {
         if (instance == null) {
-            instance = new UserHandler(connection);
+            synchronized (UserHandler.class) {
+                if (instance == null) {
+                    instance = new UserHandler(connection);
+                }
+            }
         }
         return instance;
     }
@@ -42,8 +46,7 @@ public class UserHandler extends AbstractHandler {
             if (queryKey.equals("id")) {
                 user = getUserById(exchange, requestQuery);
                 break;
-            }
-            else if (queryKey.equals("tag")) {
+            } else if (queryKey.equals("tag")) {
                 user = getUserByTag(exchange, requestQuery);
                 break;
             }
@@ -67,9 +70,13 @@ public class UserHandler extends AbstractHandler {
     }
 
     public void addUsersRelationship(Message message) {
-        String addRelationshipForSender = "UPDATE users SET relationships=CONCAT(IFNULL(relationships,''),'" + message.getToId() + " ') WHERE id=" + message.getFromId();
-        String addRelationshipForReceiver = "UPDATE users SET relationships=CONCAT(IFNULL(relationships,''),'" + message.getFromId() + " ') WHERE id=" + message.getToId();
-        try(Statement addRelationshipStatement = connection.createStatement()) {
+        String addRelationshipForSender =
+                "UPDATE users SET relationships=CONCAT(IFNULL(relationships,''),'" + message.getToId() + " ') WHERE " +
+                        "id=" + message.getFromId();
+        String addRelationshipForReceiver =
+                "UPDATE users SET relationships=CONCAT(IFNULL(relationships,''),'" + message.getFromId() + " ') WHERE" +
+                        " id=" + message.getToId();
+        try (Statement addRelationshipStatement = connection.createStatement()) {
             String userRelationships = getUserRelationships(message.getFromId());
             if (!checkSameRelationships(userRelationships, message.getToId())) {
                 addRelationshipStatement.executeUpdate(addRelationshipForSender);
@@ -106,7 +113,7 @@ public class UserHandler extends AbstractHandler {
     }
 
     private User getUserById(HttpExchange exchange, String query) {
-        try(PreparedStatement preparedStatement = connection.prepareStatement(GET_BY_ID)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(GET_BY_ID)) {
             preparedStatement.setString(1, getQueryValue(query, "id"));
             return makeUserFromResultSet(preparedStatement);
         } catch (SQLException | QueryNotFoundException throwables) {
@@ -116,7 +123,7 @@ public class UserHandler extends AbstractHandler {
     }
 
     private User getUserByTag(HttpExchange exchange, String query) {
-        try(PreparedStatement preparedStatement = connection.prepareStatement(GET_BY_TAG)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(GET_BY_TAG)) {
             preparedStatement.setString(1, getQueryValue(query, "tag"));
             return makeUserFromResultSet(preparedStatement);
         } catch (SQLException | QueryNotFoundException throwables) {
