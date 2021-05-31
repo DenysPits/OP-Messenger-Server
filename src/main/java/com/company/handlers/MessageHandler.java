@@ -21,11 +21,19 @@ public class MessageHandler extends AbstractHandler {
     public static final String GET_ALL = "SELECT * FROM messages;";
     public static final String DELETE = "DELETE FROM messages WHERE to_id = ?";
     protected static Logger logger = LoggerFactory.getLogger(MessageHandler.class);
+    private static MessageHandler instance;
     private BitSet messagesInDatabase = new BitSet();
 
-    public MessageHandler(Connection connection) {
+    private MessageHandler(Connection connection) {
         super(connection);
         populateMessagesBitSet();
+    }
+
+    public static MessageHandler getInstance(Connection connection) {
+        if (instance == null) {
+            instance = new MessageHandler(connection);
+        }
+        return instance;
     }
 
     @Override
@@ -58,7 +66,7 @@ public class MessageHandler extends AbstractHandler {
         try (InputStream inputStream = exchange.getRequestBody()) {
             message = objectMapper.readValue(inputStream, Message.class);
             processAddStatement(message);
-            new UserHandler(connection).addUsersRelationship(message);
+            UserHandler.getInstance(connection).addUsersRelationship(message);
         } catch (Exception e) {
             logger.warn("Exception was caught", e);
             status = Status.FAIL;

@@ -38,8 +38,8 @@ public class Server {
             Connection connection = DriverManager.getConnection(url, USERNAME, PASSWORD);
             HttpServer server = HttpServer.create(new InetSocketAddress(address, 8000), 0);
             System.out.println("Server was bind");
-            server.createContext("/api/messages", new MessageHandler(connection));
-            server.createContext("/api/users", new UserHandler(connection));
+            server.createContext("/api/messages", MessageHandler.getInstance(connection));
+            server.createContext("/api/users", UserHandler.getInstance(connection));
             server.setExecutor(null);
             server.start();
         } catch (SQLException | IOException throwables) {

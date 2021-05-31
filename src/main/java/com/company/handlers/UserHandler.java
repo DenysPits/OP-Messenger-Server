@@ -20,10 +20,17 @@ public class UserHandler extends AbstractHandler {
     private static final String GET_BY_ID = "SELECT * FROM users WHERE id=?";
     private static final String GET_BY_TAG = "SELECT * FROM users WHERE tag=?";
     private static final String SELECT_RELATIONSHIPS = "SELECT relationships FROM users WHERE id=?";
+    private static UserHandler instance;
 
-
-    public UserHandler(Connection connection) {
+    private UserHandler(Connection connection) {
         super(connection);
+    }
+
+    public static UserHandler getInstance(Connection connection) {
+        if (instance == null) {
+            instance = new UserHandler(connection);
+        }
+        return instance;
     }
 
     @Override
@@ -186,7 +193,7 @@ public class UserHandler extends AbstractHandler {
         updateMessage.setFromId(0);
         updateMessage.setBody(String.valueOf(idWhoWasUpdated));
         String[] userRelationships = userRelationshipsStr.trim().split("\\s+");
-        MessageHandler messageHandler = new MessageHandler(connection);
+        MessageHandler messageHandler = MessageHandler.getInstance(connection);
         for (String userRelationship : userRelationships) {
             updateMessage.setToId(Long.parseLong(userRelationship));
             messageHandler.processAddStatement(updateMessage);
