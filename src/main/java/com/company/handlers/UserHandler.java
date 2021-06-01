@@ -10,13 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 public class UserHandler extends AbstractHandler {
     private static final String ADD = "INSERT INTO users (name, tag, public_rsa, photo) VALUES (?, ?, ?, ?);";
-    private static final String UPDATE = "UPDATE users SET name=?, tag=?, public_rsa=?, photo=? WHERE id=?";
+    private static final String UPDATE = "UPDATE users SET name=?, tag=?, photo=? WHERE id=?";
     private static final String GET_BY_ID = "SELECT * FROM users WHERE id=?";
     private static final String GET_BY_TAG = "SELECT * FROM users WHERE tag=?";
     private static final String SELECT_RELATIONSHIPS = "SELECT relationships FROM users WHERE id=?";
@@ -176,9 +173,8 @@ public class UserHandler extends AbstractHandler {
         try (PreparedStatement updateStatement = connection.prepareStatement(UPDATE)) {
             updateStatement.setString(1, user.getName());
             updateStatement.setString(2, user.getTag());
-            updateStatement.setString(3, user.getPublicRsa());
-            updateStatement.setString(4, user.getPhoto());
-            updateStatement.setLong(5, user.getId());
+            updateStatement.setString(3, user.getPhoto());
+            updateStatement.setLong(4, user.getId());
             updateStatement.executeUpdate();
             notifyPeople(user.getId());
         } catch (SQLIntegrityConstraintViolationException e) {
