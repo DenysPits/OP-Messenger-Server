@@ -99,7 +99,7 @@ public class UserHandler extends AbstractHandler {
             return;
         }
         Message updateMessage = new Message();
-        updateMessage.setAction("updateUser");
+        updateMessage.setAction("update");
         updateMessage.setFromId(0);
         updateMessage.setBody(String.valueOf(idWhoWasUpdated));
         String[] userRelationships = userRelationshipsStr.trim().split("\\s+");
