@@ -1,4 +1,4 @@
-package com.company;
+package com.company.dao.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

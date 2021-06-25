@@ -13,21 +13,21 @@ public class Server {
     private static final String USERNAME = "root";
     private static final String PASSWORD = "root";
     private static String address;
+    private static Connection connection;
 
     public static void initServerData() {
         url = "jdbc:mysql://db:3306/messenger_database?autoReconnect=true&useUnicode=true&characterEncoding=utf8";
         address = "0.0.0.0";
-        /*try (BufferedReader reader = new BufferedReader(new FileReader("/app/src/main/resources/data.txt"))) {
-            url = reader.readLine();
-            address = reader.readLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
+    @SuppressWarnings("unused")
     public static void initFakeServerData() {
-        url = "jdbc:mysql://localhost:3306/messenger_database?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=utf8";
+        url = "jdbc:mysql://localhost:3306/messenger_database?autoReconnect=true&useUnicode=true&characterEncoding=utf8";
         address = "localhost";
+    }
+
+    public static Connection getConnection() {
+        return connection;
     }
     
     public static void main(String[] args) {
@@ -35,15 +35,15 @@ public class Server {
             initServerData();
             //initFakeServerData();
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
-            Connection connection = DriverManager.getConnection(url, USERNAME, PASSWORD);
+            connection = DriverManager.getConnection(url, USERNAME, PASSWORD);
             HttpServer server = HttpServer.create(new InetSocketAddress(address, 8000), 0);
             System.out.println("Server was bind");
-            server.createContext("/api/messages", MessageHandler.getInstance(connection));
-            server.createContext("/api/users", UserHandler.getInstance(connection));
+            server.createContext("/api/messages", MessageHandler.getInstance());
+            server.createContext("/api/users", UserHandler.getInstance());
             server.setExecutor(null);
             server.start();
-        } catch (SQLException | IOException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException | IOException throwable) {
+            throwable.printStackTrace();
         }
     }
 }

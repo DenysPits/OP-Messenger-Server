@@ -1,4 +1,4 @@
-package com.company;
+package com.company.dao.entities;
 
 public class User {
     private long id;

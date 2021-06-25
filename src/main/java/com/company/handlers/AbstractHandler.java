@@ -1,8 +1,8 @@
 package com.company.handlers;
 
 import com.company.QueryNotFoundException;
-import com.company.Status;
-import com.company.StatusResponse;
+import com.company.status.Status;
+import com.company.status.StatusResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -10,15 +10,12 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.Connection;
 
 public abstract class AbstractHandler implements HttpHandler {
-    protected Connection connection;
     protected static ObjectMapper objectMapper = new ObjectMapper();
     protected Status status = Status.SUCCESS;
 
-    public AbstractHandler(Connection connection) {
-        this.connection = connection;
+    public AbstractHandler() {
         objectMapper.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
     }
 
@@ -55,6 +52,14 @@ public abstract class AbstractHandler implements HttpHandler {
         byte[] response = objectMapper.writeValueAsBytes(statusResponse);
         OutputStream outputStream = exchange.getResponseBody();
         exchange.sendResponseHeaders(200, response.length);
+        outputStream.write(response);
+        outputStream.close();
+    }
+
+    protected <T> void sendEntitiesInResponse(HttpExchange exchange, T entity) throws IOException {
+        byte[] response = objectMapper.writeValueAsBytes(entity);
+        exchange.sendResponseHeaders(200, response.length);
+        OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(response);
         outputStream.close();
     }
