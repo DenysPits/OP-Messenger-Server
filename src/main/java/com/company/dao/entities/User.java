@@ -5,7 +5,6 @@ public class User {
     private String name;
     private String tag;
     private String photo;
-    private String publicRsa;
 
     public String getName() {
         return name;
@@ -39,11 +38,4 @@ public class User {
         this.photo = photo;
     }
 
-    public String getPublicRsa() {
-        return publicRsa;
-    }
-
-    public void setPublicRsa(String publicRsa) {
-        this.publicRsa = publicRsa;
-    }
 }

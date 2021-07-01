@@ -9,13 +9,12 @@ import java.sql.*;
 public class UserDaoImpl implements UserDao {
     @Override
     public void addUser(User user) throws SQLException {
-        String add = "INSERT INTO users (name, tag, public_rsa, photo) VALUES (?, ?, ?, ?);";
+        String add = "INSERT INTO users (name, tag, photo) VALUES (?, ?, ?);";
         Connection connection = Server.getConnection();
         try (PreparedStatement addStatement = connection.prepareStatement(add, Statement.RETURN_GENERATED_KEYS)) {
             addStatement.setString(1, user.getName());
             addStatement.setString(2, user.getTag());
-            addStatement.setString(3, user.getPublicRsa());
-            addStatement.setString(4, user.getPhoto());
+            addStatement.setString(3, user.getPhoto());
             addStatement.executeUpdate();
             addStatement.getGeneratedKeys();
             ResultSet resultSet = addStatement.getGeneratedKeys();
@@ -108,7 +107,6 @@ public class UserDaoImpl implements UserDao {
                 user.setId(userResultSet.getLong("id"));
                 user.setName(userResultSet.getString("name"));
                 user.setPhoto(userResultSet.getString("photo"));
-                user.setPublicRsa(userResultSet.getString("public_rsa"));
                 user.setTag(userResultSet.getString("tag"));
             }
             return user;
